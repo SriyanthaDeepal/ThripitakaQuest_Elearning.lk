@@ -36,9 +36,18 @@ export default function Chat(){
     setLoadingOldConversation(true);
   };
 
+  // Function to reset the current conversation in MainBar
+  const resetCurrentConversation = () => {
+    setNewConversation(true);
+    setSelectedConversation(null);
+    setQueryButtonClicked(false);
+    setLoadingOldConversation(false);
+  };
+
   return (
     <div className="homeChat">
-      <SideBar onNewChatClick={handleNewChatClick} onQueryButtonClick={handleQueryButtonClick} />
+      <SideBar onNewChatClick={handleNewChatClick} onQueryButtonClick={handleQueryButtonClick} 
+                            resetCurrentConversation={resetCurrentConversation} />
       <MainBar isNewConversation={isNewConversation} resetNewConversation={resetNewConversation} selectedConversation={selectedConversation}
       queryButtonClicked={queryButtonClicked} loadingOldConversation={loadingOldConversation}/>
     </div>

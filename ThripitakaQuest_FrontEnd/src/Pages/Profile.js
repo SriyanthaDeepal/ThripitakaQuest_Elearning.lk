@@ -272,7 +272,15 @@ export default function UserProfile() {
       setShowPasswordModal(true);
     } else {
       // If user doesn't have a password, proceed with deletion directly
+    const provider = new GoogleAuthProvider();
+    try {
+      await reauthenticateWithPopup(auth.currentUser, provider);
       await handleConfirmDeleteProfile('');
+    } catch (error) {
+      console.error('Error during reauthentication:', error);
+      // Handle reauthentication error
+      alert('Failed to reauthenticate using Google. Please try again.');
+    }
     }
   };
 
@@ -283,6 +291,7 @@ export default function UserProfile() {
   const handleConfirmDeleteProfile = async () => {
     try {
       const userId = auth.currentUser.uid;
+      const profileImageURL = await getProfilePictureURL();
       // Fetch all conversation related to the user
       const querySnapshot = await getDocs(collection(db, 'conversations'));
       const conversationRefs = [];
@@ -299,7 +308,7 @@ export default function UserProfile() {
         await deleteDoc(conversationRef);
       }
       // Check if user has profile picture and if has delete it
-      if (userProfile.imageUrl) {
+      if (profileImageURL) {
         const profileImageRef = storageRef(storage, `profilePictures/${auth.currentUser.uid}`);
         await deleteStorageObject(profileImageRef);
       }

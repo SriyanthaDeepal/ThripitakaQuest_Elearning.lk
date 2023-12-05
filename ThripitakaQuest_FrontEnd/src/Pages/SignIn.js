@@ -48,7 +48,7 @@ export default function SignIn() {
             lastName: lastName,
             imageUrl: imageUrl,
           });
-    
+          console.log(imageUrl);
           // Pass user information to the chat page
           navigate('/Chat');
         } else {

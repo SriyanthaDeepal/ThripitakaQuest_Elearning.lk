@@ -26,6 +26,7 @@ export default function(props){
   const [queryButtonClicked, setQueryButtonClicked] = useState(false);
   // Use usestate to retrieve conversationId in the firebase 
   const [selectedConversationId, setSelectedConversationId] = useState(null);
+  const [keyForRerender, setKeyForRerender] = useState(0);
 
   // Use context API to pass data
   const { users } = useUserContext();
@@ -80,14 +81,25 @@ export default function(props){
   };
 
 
+  // Pass a function to reset the current conversation to mainbar
+  const resetCurrentConversation = () => {
+    props.resetCurrentConversation();
+  }
+
   // Function to delete a conversation from the database
   const handleDeleteButtonClick = async (conversationId) => {
     try {
         // Implement logic to delete the conversation document
         await deleteConversation(conversationId);
 
+        // Reset the selected conversation ID to null
+        setSelectedConversationId(null);
+
         // Update the conversation list
         await fetchConversations();
+
+        // Call the function to reset the current conversation
+        resetCurrentConversation();
     } catch (error) {
         console.error('Error deleting conversation:', error);
     }
@@ -99,7 +111,6 @@ export default function(props){
         // Implement logic to delete the conversation document
         const conversationRef = doc(db, 'conversations', conversationId);
         await deleteDoc(conversationRef);
-
         // Reset the selectedConversationId
         setSelectedConversationId(null);
     } catch (error) {
@@ -181,7 +192,8 @@ export default function(props){
                               src={deleteIcon}
                               rounded
                               className="deleteBtnImg"
-                              onClick={() => handleDeleteButtonClick(conversation.id)}
+                              onClick={() => {handleDeleteButtonClick(conversation.id); 
+                                              setSelectedConversationId(conversation.id);}}
                             />
                           )}
                         </Button>

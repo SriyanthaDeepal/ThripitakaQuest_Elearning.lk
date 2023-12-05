@@ -104,13 +104,15 @@ export default function MainBar(props) {
     setInput('');
     
     // Create user message object
-    const userMessage = { text, sender: 'user', isBot: false, timestamp: new Date() };
+    const userMessage = { text: text, sender: 'user', isBot: false, timestamp: new Date() };
     setMessages([...messages, userMessage]);
     
     //const botResponse = await axios.post('http://127.0.0.1:5000/send_message', {text})
     // Getting responese for the user message
     const botResponse = await sendMsgToOpenAI(text);
-    const botMessage = { text: botResponse.data.message, sender: 'bot', isBot: true, timestamp: new Date() };
+    const botMessage = { text: botResponse, sender: 'bot', isBot: true, timestamp: new Date() };
+
+    //const botMessage = { text: botResponse.data.message, sender: 'bot', isBot: true, timestamp: new Date() };
     
     // update the conversation in firestore based on the conversation status
     if (loadingOldConversation) {
@@ -161,6 +163,13 @@ export default function MainBar(props) {
   const handleEnter = async (e) => {
     if(e.key=='Enter') await handleSend();
   }
+
+
+  const refreshAndStartNewConversation = () => {
+    setMessages([]);
+    setConversationID(generateConversationID());
+    setNewConversation(true);
+  };
 
   return (
     <div className="mainBar">
