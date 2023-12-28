@@ -263,7 +263,7 @@ export default function UserProfile() {
 
   // Handle cancel button click
   const handleCancel = () => {
-    navigate('/Chat', { state: location.state });
+    navigate('/Chat', {state: location.state});
   };
 
   // Delete all user data
@@ -328,7 +328,7 @@ export default function UserProfile() {
 
       await auth.currentUser.delete();
 
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (error) {
       // Error handling for different deletion
       console.error('Error deleting user data:', error);

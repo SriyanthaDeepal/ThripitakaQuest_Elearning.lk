@@ -149,7 +149,7 @@ export default function(props){
       setConversations([]);
       setShowProfileOptions(false);
 
-      navigate('/')
+      navigate('/', { replace: true })
 
       // Clear local storage or session storage (optional)
       localStorage.clear(); 
