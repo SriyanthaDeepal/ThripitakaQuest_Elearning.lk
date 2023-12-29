@@ -37,6 +37,11 @@ body{
     margin-bottom: 1rem;
 }
 
+.errorAlert{
+    margin: 0;
+    padding: 0.7rem;
+}
+
 .authButton{
     display: flex;
     flex-direction: row;
@@ -102,8 +107,6 @@ body{
 .forgotPassword{
     font-size: 1.2rem;
 }
-
-
 
 /* Media Query for Mobile Devices */
 @media only screen and (max-width: 600px) {

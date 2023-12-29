@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 import TextInMiddle from "../Components/TextInMiddle";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, Image, Form, Button, Row, Col, Divider } from 'react-bootstrap';
+import { Card, Image, Form, Button, Row, Col, Divider, Alert } from 'react-bootstrap';
 import logo from "../assets/ThripitakaQuestLogo.png"
 import googleLogo from "../assets/googleLogo.png";
 import appleLogo from "../assets/appleLogo.png";
@@ -20,14 +20,44 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+  const [alert, setAlert] = useState(null);
+
   const navigate = useNavigate();
   const { updateUser } = useUserContext(); // Use the context
+
+
+  const showAlert = (message, variant) => {
+    setAlert({ message, variant });
+    setTimeout(() => setAlert(null), 1200); // Clear alert after 3 seconds
+  };
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   // Implement the sign in function using email and password
   const handleSignIn = () => {
+
+    // Check if email and password are filled
+    if (!email.trim()) {
+      setEmailError(true);
+      showAlert('Email is required', 'danger');
+      return;
+    }
+
+    if (!password.trim()) {
+      setPasswordError(true);
+      showAlert('Password is required', 'danger');
+      return;
+    }
+
+    // Clear previous error states
+    setEmailError(false);
+    setPasswordError(false);
+
+
     signInWithEmailAndPassword(auth, email, password)
       .then(async (userCredential) => {
         const user = userCredential.user;
@@ -52,12 +82,31 @@ export default function SignIn() {
           // Pass user information to the chat page
           navigate('/Chat');
         } else {
+          showAlert("User doesn't exist.", 'danger');
           console.error('User data not found in Firestore.');
         }
       })
       .catch((error) => {
-        // Handle sign-in errors here, such as incorrect email or password.
-        console.error('Error signing in:', error);
+        // Handle sign-in errors
+        if (error.code === 'auth/too-many-requests') {
+          // Show a custom error message for "too-many-requests" error
+          showAlert('Access temporarily disabled due to many failed login attempts. Reset your password or try again later.', 'danger');
+        } else if (error.code === 'auth/invalid-email') {
+          showAlert('The email address is invalid or badly formatted.', 'danger');
+        } else if (error.code === 'auth/user-not-found') {
+          showAlert('There is no user found corresponding to the provided email.', 'danger');
+        }else if (error.code === 'auth/wrong-password') {
+          showAlert('The password is invalid for the given email.', 'danger');
+        }else if (error.code === 'auth/too-many-requests') {
+          showAlert('Access to this account has been temporarily disabled due to many failed login attempts.', 'danger');
+        }else if (error.code === 'auth/invalid-credential') {
+          showAlert('The supplied auth credential is malformed or has expired.', 'danger');
+        }else if (error.code === 'auth/invalid-login-credentials'){
+          showAlert('Invalid login credentialss', 'danger');
+        }else{
+          showAlert('An error occurred during sign-in. Please try again.', 'danger');
+          console.log(error)
+        }
     });
   };
 
@@ -162,9 +211,9 @@ export default function SignIn() {
                   <Card.Body>
                       <Card.Title className="cardTitleSignIn">Sign In to Explore <br/> Wisdom</Card.Title>
                       <Form>
-                          <Form.Group controlId="email" className="emailGroupSignIn" value={email} onChange={(e) => setEmail(e.target.value)}><Form.Control size="lg" type="email" placeholder="Email" /></Form.Group>
+                          <Form.Group controlId="email" className={`emailGroupSignIn`} value={email} onChange={(e) => setEmail(e.target.value)}><Form.Control size="lg" type="email" placeholder="Email" /></Form.Group>
 
-                          <Form.Group controlId="password" className="passwordGroupSignIn" value={password} onChange={(e) => setPassword(e.target.value)}>
+                          <Form.Group controlId="password" className={`passwordGroupSignIn`} value={password} onChange={(e) => setPassword(e.target.value)}>
                             <div className="password-input-wrapper">
                                   <Form.Control
                                       size="lg"
@@ -177,9 +226,14 @@ export default function SignIn() {
                               </div>  
                           </Form.Group>
                           {/*<a className="forgotPassword" href="/PasswordReset">Forgot Password?</a>*/}
+                          {alert && (
+                            <Alert variant={alert.variant} className="mt-3 errorAlert">
+                              {alert.message}
+                            </Alert>
+                          )}
                           <Button variant="light" className="continueButton" onClick={handleSignIn}>Continue</Button>
                       </Form>
-
+                    
                       <div className="middleText" >
                         <TextInMiddle title="or"/>
                       </div>
