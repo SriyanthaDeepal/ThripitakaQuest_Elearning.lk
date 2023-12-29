@@ -1,5 +1,5 @@
 import React from 'react';
-import { Col, Button, Row, Container, Card, Form, Image } from 'react-bootstrap';
+import { Col, Button, Row, Alert, Card, Form, Image } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -18,8 +18,15 @@ export default function Registration() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rePassword, setRePassword] = useState('');
-    const [passwordError, setPasswordError] = useState('');
+    const [alert, setAlert] = useState(null);
+
     const navigate = useNavigate();
+
+    // Show alert when error occured
+    const showAlert = (message, variant) => {
+        setAlert({ message, variant });
+        setTimeout(() => setAlert(null), 2000); 
+    };
 
     // Use usestate show password
     const togglePasswordVisibility = () => {
@@ -37,27 +44,27 @@ export default function Registration() {
         const passwordPolicy = "Password must include at leat one lower leter,upper letter, number & non-alphanumeric character(!@#$%&*).";
 
         if (password.length < 8 || password.length > 14) {
-            setPasswordError(`Password must be between 8 and 14 characters long. ${passwordPolicy}`);
+            showAlert(`Password must be between 8 and 14 characters long. ${passwordPolicy}`, 'danger');
             return false;
         }
       
         if (!/[a-z]/.test(password)) {
-          setPasswordError(passwordPolicy);
-          return false;
+            showAlert(passwordPolicy,'danger');
+            return false;
         }
       
         if (!/[A-Z]/.test(password)) {
-          setPasswordError(passwordPolicy);
-          return false;
+            showAlert(passwordPolicy,'danger');
+            return false;
         }
       
         if (!/[0-9]/.test(password)) {
-          setPasswordError(passwordPolicy);
-          return false;
+            showAlert(passwordPolicy,'danger');
+            return false;
         }
 
         if (!/[^\w]/.test(password)) {
-            setPasswordError(passwordPolicy);
+            showAlert(passwordPolicy,'danger');
             return false;
         }
       
@@ -66,17 +73,33 @@ export default function Registration() {
     
 
     const handleSignUp = async () => {
+
         try {
+
+            if (!firstName.trim()){
+                showAlert('First name is required', 'danger');
+                return;
+            }
+    
+            if (!email.trim()) {
+                showAlert('Email is required', 'danger');
+                return;
+              }
+          
+            if (!password.trim()) {
+                showAlert('Password is required', 'danger');
+                return;
+            }
 
             // Check if the password meets the complexity requirements
             const passwordIsValid = validatePassword(password);
             if (!passwordIsValid) {
-            return;
+                return;
             }
 
             // Check if the password and confirm password match
             if (password !== rePassword) {
-            setPasswordError('Password and Confirm Password do not match');
+                showAlert('Password and Confirm Password do not match','danger');
             return;
             }
 
@@ -98,11 +121,22 @@ export default function Registration() {
 
             await setDoc(userRef, userData);
 
+            showAlert('Account Created Successfully...!', 'primary')
             // Navigate to the sign-in page
-            navigate('/');
+            setTimeout(() => {
+                navigate('/');
+              }, 2000);
         } catch (error) {
-            // Handle registration errors here, such as invalid email or password.
-            console.error('Error registering user:', error);
+            // Handle registration errors here such as invalid email
+            if (error.code === 'auth/invalid-email') {
+                showAlert('Invalid email format. Please provide a valid email address.', 'danger');
+            } else if (error.code === 'auth/weak-password') {
+                showAlert('Weak password. Please use a stronger password.', 'danger');
+            } else if (error.code === 'auth/email-already-in-use') {
+                showAlert('The provided email is already in use by an existing user.', 'danger');
+            }else {
+                showAlert('Error registering user. Please try again later.', 'danger');
+            }
         }
     };
 
@@ -156,12 +190,11 @@ export default function Registration() {
                                     </span>
                                 </div>
                             </Form.Group>
-                            {/* Password Error Message */}
-                                {passwordError && (
-                                <div className="password-error-message">
-                                    <p>{passwordError}</p>
-                                </div>
-                                )}
+                            {alert && (
+                            <Alert variant={alert.variant} className="mt-3 errorAlert">
+                              {alert.message}
+                            </Alert>
+                            )}
 
                             <Button variant="light" className="signUpButton" onClick={handleSignUp}>Sign Up</Button>
                         </Form>
