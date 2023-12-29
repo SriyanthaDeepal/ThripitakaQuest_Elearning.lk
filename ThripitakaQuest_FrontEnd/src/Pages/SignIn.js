@@ -225,7 +225,7 @@ export default function SignIn() {
                                   </span>
                               </div>  
                           </Form.Group>
-                          {/*<a className="forgotPassword" href="/PasswordReset">Forgot Password?</a>*/}
+                          <a className="forgotPassword" href="/PasswordReset">Forgot Password?</a>
                           {alert && (
                             <Alert variant={alert.variant} className="mt-3 errorAlert">
                               {alert.message}
