@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
+import './PasswordReset.css';
+import { Alert } from 'react-bootstrap';
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('');
@@ -14,36 +16,73 @@ export default function ResetPassword() {
           success: true,
           message: 'Password reset email sent successfully. Check your email.',
         });
+        setEmail(''); // Reset email field after successful email sending
       })
       .catch((error) => {
-        setResetStatus({
-          success: false,
-          message: `Error sending password reset email: ${error.message}`,
-        });
+        if (error.code === 'auth/user-not-found') {
+          setResetStatus({
+            success: false,
+            message: 'User with this email does not exist. Please sign up.',
+          });
+        } else if (error.code === 'auth/invalid-email') {
+          setResetStatus({
+            success: false,
+            message: 'Please enter a valid email.',
+          });
+        } else if (error.code === 'auth/missing-email') {
+          setResetStatus({
+            success: false,
+            message: 'Please enter an email to send reset email.',
+          });
+        } else if (error.code === 'auth/network-request-failed') {
+          setResetStatus({
+            success: false,
+            message: 'Check internet connection and try again.',
+          });
+        } else {
+          setResetStatus({
+            success: false,
+            message: 'Error sending password reset email. Please try again.',
+          });
+        }
+        setEmail(''); // Reset email field after handling errors
       });
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setResetStatus(null);
+    }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [resetStatus]);
+
   return (
-    <div>
-      <h2>Reset Password</h2>
-      <form>
-        <label>
-          Email:
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
-        <button type="button" onClick={handleResetPassword}>
-          Reset Password
-        </button>
-      </form>
-      {resetStatus && (
-        <div className={resetStatus.success ? 'success-message' : 'error-message'}>
-          {resetStatus.message}
-        </div>
-      )}
+    <div className="containerPasswordResetRequest">
+      <div className="passwordResetRequest">
+        <h2>Reset Password</h2>
+        <form className="emailSend">
+          <label>
+            <input
+              className="email inputs"
+              type="email"
+              value={email}
+              placeholder="Email"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+          <button type="button" className="resetPasswordBtn" onClick={handleResetPassword}>
+            Reset Password
+          </button>
+        </form>
+        {resetStatus && (
+          <Alert className='alertMessage' variant={resetStatus.success ? 'success' : 'danger'}>
+            {resetStatus.message}
+          </Alert>
+        )}
+      </div>
     </div>
   );
 }

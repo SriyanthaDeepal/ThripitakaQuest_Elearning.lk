@@ -132,9 +132,18 @@ export default function SignIn() {
     
         if (!userExists) {
           // User is new, create a user document in Firestore
-          createUserInFirestore(user.uid, user.email);
-        }
-
+          createUserInFirestore(user.uid, user.email, user.photoURL);
+        } else {
+          // User exists but might not have a profile picture, update it if necessary
+          const userRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userRef);
+          const userData = userDoc.data();
+  
+          // If the user exists and doesn't have a profile picture, update it with the Google profile picture
+          if (userData && !userData.imageUrl) {
+          await setDoc(userRef, { imageUrl: user.photoURL }, { merge: true });
+          }
+        }    
         updateUser({
           email: user.email,
           userID: user.uid,

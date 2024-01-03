@@ -110,13 +110,12 @@ export default function Registration() {
             const user = userCredential.user;
 
             // Save user data to Firestore
-            const userRef = doc(db, 'users', user.uid); // Assuming 'users' is the collection
+            const userRef = doc(db, 'users', user.uid); 
 
             const userData = {
                 firstName: firstName,
                 lastName: lastName,
                 email: email,
-                password: password
             };
 
             await setDoc(userRef, userData);
