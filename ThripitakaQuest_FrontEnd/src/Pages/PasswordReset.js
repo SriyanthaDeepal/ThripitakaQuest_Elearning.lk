@@ -78,7 +78,7 @@ export default function ResetPassword() {
           </button>
         </form>
         {resetStatus && (
-          <Alert className='alertMessage' variant={resetStatus.success ? 'success' : 'danger'}>
+          <Alert variant={resetStatus.success ? 'success' : 'danger'}>
             {resetStatus.message}
           </Alert>
         )}
