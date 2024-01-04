@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Col, Button, Row, Form, Modal } from 'react-bootstrap';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { updateProfile as updateProfileFirebase, updatePassword, reauthenticateWithPopup,
-  GoogleAuthProvider, reauthenticateWithCredential, EmailAuthProvider,} from 'firebase/auth';
+  GoogleAuthProvider,getAuth, reauthenticateWithCredential, EmailAuthProvider,} from 'firebase/auth';
 import { doc, getDoc, getDocs, updateDoc, deleteDoc, collection, query, where, deleteObject } from 'firebase/firestore';
 import { list, ref, ref as storageRef, uploadBytes, getDownloadURL, deleteObject as deleteStorageObject } from 'firebase/storage';
 import { auth, db, storage } from './firebase';
@@ -54,8 +54,14 @@ export default function UserProfile() {
           imageUrl: userData.imageUrl || '',
         }));
 
-        // Check the condition whether user has a password or not
-        setHasPassword(!!userData.password);
+        // Check the condition based on providerData for password existence
+      const providerData = auth.currentUser.providerData;
+      const hasPasswordProvider = providerData.some(
+        (provider) => provider.providerId === 'password'
+      );
+
+      // Set the hasPassword state based on the existence of a password provider
+      setHasPassword(hasPasswordProvider);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -100,6 +106,7 @@ export default function UserProfile() {
     }
     // Check if the input field is 'prevPassword' and has no password set
     if (name === 'prevPassword' && !hasPassword) {
+      e.target.removeAttribute('disabled');
       return;
     }
   };
@@ -136,7 +143,8 @@ export default function UserProfile() {
       const userDoc = await getUserDataFromFirestore(auth.currentUser.uid);
 
       // Check if the user has a password in Firestore
-      const storedPassword = userDoc.data().password;
+      const currentUser = auth.currentUser;
+      const storedPassword = currentUser.providerData.some((provider)=>provider.providerId === 'password');
 
       // Update user profile information in Firestore
       if (userProfile.profilePicture) {
@@ -187,32 +195,31 @@ export default function UserProfile() {
         });
       }
 
-      // Check if the stored password exists and matches the provided prevPassword
-      if(prevPassword){
-        if (storedPassword !== undefined && storedPassword !== null && storedPassword !== prevPassword) {
-          setMessage('Incorrect previous password. Please try again.');
-          return;
-        }
-      }
 
       // If the user doesn't have a password, set a new one
       if (!storedPassword) {
-        await updatePassword(auth.currentUser, newPassword);
+        await updatePassword(currentUser, newPassword);
       } else if (prevPassword) {
         // Reauthenticate user before updating the password
         try {
-          if (auth.currentUser.providerData[0].providerId === 'google.com') {
-            await reauthenticateWithPopup(auth.currentUser, new GoogleAuthProvider());
-          } else {
-            const credential = EmailAuthProvider.credential(auth.currentUser.email, prevPassword);
-            auth().currentUser.reauthenticate(credential);
-          }
+          const auth = getAuth();
+          const credential = EmailAuthProvider.credential(currentUser.email, prevPassword);
+          await reauthenticateWithCredential(auth.currentUser, credential);
+
           // Update user password
-          await updatePassword(auth.currentUser, newPassword);
+          await updatePassword(currentUser, newPassword);
         } catch (reauthError) {
           // Handle reauthentication error
-          //console.error('Error during reauthentication:', reauthError);
-          //setMessage('Failed to reauthenticate. Please try again.');
+          if (reauthError.code === 'auth/invalid-login-credentials'){
+            displayMessage('Incorrect previous password. Please try again.');
+          }else if(reauthError.code === 'auth/wrong-password') {
+            // Display an error message when the provided previous password is incorrect
+            displayMessage('Incorrect previous password. Please try again.');
+          } else {
+            // Handle other reauthentication errors
+            displayMessage('Failed to reauthenticate. Please try again.');
+          }
+          
           return;
         }
       }
@@ -222,14 +229,14 @@ export default function UserProfile() {
         if(!isPasswordValid){
           return;
         } else{
-          setMessage('Profile updated successfully!');
+          displayMessage('Profile updated successfully!');
         }
       } else{
-        setMessage('Profile updated successfully!');
+        displayMessage('Profile updated successfully!');
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      setMessage('Failed to update profile. Please try again.');
+      //console.error('Error updating profile:', error);
+      displayMessage('Failed to update profile. Please try again.');
     }
   };
 
@@ -244,9 +251,9 @@ export default function UserProfile() {
     try {
       const storageRef = ref(storage, `profilePictures/${auth.currentUser.uid}`);
       await uploadBytes(storageRef, file);
-      setMessage('Profile updated successfully!');
+      displayMessage('Profile updated successfully!');
     } catch (error) {
-      console.error('Error uploading profile picture:', error);
+      //console.error('Error uploading profile picture:', error);
     }
   };
 
@@ -257,7 +264,7 @@ export default function UserProfile() {
       const downloadURL = await getDownloadURL(storageRef);
       return downloadURL;
     } catch (error) {
-      console.error('Error getting profile picture URL:', error);
+      //console.error('Error getting profile picture URL:', error);
     }
   };
 
@@ -331,17 +338,20 @@ export default function UserProfile() {
       navigate('/', { replace: true });
     } catch (error) {
       // Error handling for different deletion
-      console.error('Error deleting user data:', error);
+      //console.error('Error deleting user data:', error);
 
-      if (error.code === 'storage/object-not-found') {
-        console.warn('Profile picture not found in storage.');
+      if(error.code === 'auth/invalid-login-credentials'){
+        alert('Incorrect Password. Delection Canceled.')
+      }
+      else if(error.code === 'storage/object-not-found') {
+        //console.warn('Profile picture not found in storage.');
       } 
       else if (error.code === 'auth/wrong-password') {
         alert('Incorrect password. Deletion canceled.');
       } 
       else {
-        console.error('Unhandled error:', error);
-        throw error;
+        //console.error('Unhandled error:', error);
+        //throw error;
       }
     } finally {
       //Close the password modal after deletion
@@ -355,27 +365,27 @@ export default function UserProfile() {
       const passwordPolicy = "Password must include at leat one lower leter,upper letter, number & non-alphanumeric character(!@#$%&*).";
 
       if (password.length < 8 || password.length > 14) {
-          setMessage(`Password must be between 8 and 14 characters long. ${passwordPolicy}`);
+        displayMessage(`Password must be between 8 and 14 characters long. ${passwordPolicy}`);
           return false;
       }
     
       if (!/[a-z]/.test(password)) {
-        setMessage(passwordPolicy);
+        displayMessage(passwordPolicy);
         return false;
       }
     
       if (!/[A-Z]/.test(password)) {
-        setMessage(passwordPolicy);
+        displayMessage(passwordPolicy);
         return false;
       }
     
       if (!/[0-9]/.test(password)) {
-        setMessage(passwordPolicy);
+        displayMessage(passwordPolicy);
         return false;
       }
 
       if (!/[^\w]/.test(password)) {
-        setMessage(passwordPolicy);
+        displayMessage(passwordPolicy);
         return false;
       }
     
@@ -383,6 +393,20 @@ export default function UserProfile() {
     }
   };
   
+  // Function to display alert message with a timeout
+  const displayMessage = (message) => {
+    setMessage(message);
+  
+    // Set a timeout to clear the message after 2 seconds
+    const timeout = setTimeout(() => {
+      setMessage('');
+    }, 2000); 
+  
+    // Clear the timeout if the component unmounts or when a new message is displayed
+    return () => clearTimeout(timeout);
+  };
+
+
   return (
     <div className="container">
       <div className="profileHeader">

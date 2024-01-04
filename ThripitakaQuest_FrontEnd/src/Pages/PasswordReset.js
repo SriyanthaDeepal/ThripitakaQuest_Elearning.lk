@@ -9,15 +9,16 @@ export default function ResetPassword() {
 
   const handleResetPassword = () => {
     const auth = getAuth();
-
+    // Send an email to user give email
     sendPasswordResetEmail(auth, email)
       .then(() => {
         setResetStatus({
           success: true,
           message: 'Password reset email sent successfully. Check your email.',
         });
-        setEmail(''); // Reset email field after successful email sending
+        setEmail(''); 
       })
+      // Display if any error occured
       .catch((error) => {
         if (error.code === 'auth/user-not-found') {
           setResetStatus({
@@ -45,7 +46,7 @@ export default function ResetPassword() {
             message: 'Error sending password reset email. Please try again.',
           });
         }
-        setEmail(''); // Reset email field after handling errors
+        setEmail(''); 
       });
   };
 

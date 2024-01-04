@@ -52,6 +52,7 @@ export default function NewPassword() {
     return true;
   };
 
+  // Enable to user to check password by showing
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -61,30 +62,36 @@ export default function NewPassword() {
   };
 
   const handlePasswordReset = () => {
+    // Check the validity of the password
     const passwordIsValid = validatePassword(newPassword);
     if (!passwordIsValid) {
       return;
     }
 
+    // Check whether user password and confirm password are equals
     if (newPassword !== rePassword) {
       showAlert('Passwords do not match.');
       return;
     }
 
+    // Extract oobcode status to validate the email link
     const searchParams = new URLSearchParams(location.search);
     const oobCode = searchParams.get('oobCode');
 
+    // If oobcode is not a valid one display an alert
     if (!oobCode) {
       showAlert('Invalid reset link. Please request a new one.');
       return;
     }
 
+    // Reset the old password and display a message
     confirmPasswordReset(auth, oobCode, newPassword)
       .then(() => {
         showAlert('Password reset successful. You can now log in with your new password.', 'success');
         navigate('/', { replace: true })
       })
       .catch((error) => {
+        // If link is used or timed out, display a message
         if (error.code === 'auth/invalid-action-code') {
           showAlert('Link to reset your password has expired or has already been used.');
         } else {
@@ -95,7 +102,7 @@ export default function NewPassword() {
 
   return (
     <div className='ContainerNewPassword'>
-      <div className='newPassword'>
+      <div className='newResetPassword'>
         <h2>New Password</h2>
         <Form onSubmit={(e) => e.preventDefault()}>
           <Form.Group controlId="password" className="newPasswordGroup">
