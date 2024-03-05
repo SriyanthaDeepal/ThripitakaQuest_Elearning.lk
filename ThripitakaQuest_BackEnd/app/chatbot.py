@@ -24,7 +24,7 @@ base_model = GPT2LMHeadModel.from_pretrained(
 
 tokenizer.pad_token_id = tokenizer.eos_token_id
 
-persist_directory = ".\ThripitakaQuest_BackEnd\db"
+persist_directory = "db"
 
 loader = TextLoader('app\statics\\tipitaka.txt', encoding="utf-8")
 documents = loader.load()
