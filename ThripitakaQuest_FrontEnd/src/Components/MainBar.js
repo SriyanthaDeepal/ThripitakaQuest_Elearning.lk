@@ -8,7 +8,7 @@ import { useLocation } from 'react-router-dom';
 import firebase from 'firebase/compat/app';
 import { doc, collection, updateDoc, arrayUnion, getDoc, getDocs, setDoc } from 'firebase/firestore';
 import { db } from '../Pages/firebase';
-//import axios from 'axios';
+import axios from 'axios';
 import { useUserContext } from '../UserContext';
 import "./MainBar.css";
 

@@ -21,3 +21,9 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+db/chroma.sqlite3
+db/021983eb-c59e-4da5-9a20-b6bb7d51251f/data_level0.bin
+db/021983eb-c59e-4da5-9a20-b6bb7d51251f/link_lists.bin
+db/021983eb-c59e-4da5-9a20-b6bb7d51251f/header.bin
+db/021983eb-c59e-4da5-9a20-b6bb7d51251f/index_metadata.pickle
+db/021983eb-c59e-4da5-9a20-b6bb7d51251f/length.bin

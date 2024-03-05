@@ -26,7 +26,7 @@ tokenizer.pad_token_id = tokenizer.eos_token_id
 
 persist_directory = "db"
 
-loader = TextLoader('app\statics\\tipitaka.txt', encoding="utf-8")
+loader = TextLoader('ThripitakaQuest_BackEnd\\app\statics\\tipitaka.txt', encoding="utf-8")
 documents = loader.load()
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=100)
 texts = text_splitter.split_documents(documents)
@@ -96,7 +96,7 @@ def ask():
             user_input = data.get('query', '')
             answer = process_answer({'query': user_input})
             response = jsonify({'response': answer})
-            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000/'  # Replace * with your actual frontend origin
+            print(user_input)
             return jsonify({'response': answer})
         else:
             return jsonify({'response': "enter a question"})
