@@ -11,6 +11,8 @@ node_modules/
 # production
 /build
 
+/db
+
 # misc
 .DS_Store
 .env.local
@@ -27,3 +29,9 @@ db/021983eb-c59e-4da5-9a20-b6bb7d51251f/link_lists.bin
 db/021983eb-c59e-4da5-9a20-b6bb7d51251f/header.bin
 db/021983eb-c59e-4da5-9a20-b6bb7d51251f/index_metadata.pickle
 db/021983eb-c59e-4da5-9a20-b6bb7d51251f/length.bin
+ThripitakaQuest_BackEnd/ThripitakaQuest_BackEnd/db/80008223-4225-4e3b-8e8e-14b0390801e8/link_lists.bin
+ThripitakaQuest_BackEnd/ThripitakaQuest_BackEnd/db/80008223-4225-4e3b-8e8e-14b0390801e8/length.bin
+ThripitakaQuest_BackEnd/ThripitakaQuest_BackEnd/db/80008223-4225-4e3b-8e8e-14b0390801e8/header.bin
+ThripitakaQuest_BackEnd/ThripitakaQuest_BackEnd/db/80008223-4225-4e3b-8e8e-14b0390801e8/data_level0.bin
+ThripitakaQuest_BackEnd/ThripitakaQuest_BackEnd/db/chroma.sqlite3
+ThripitakaQuest_BackEnd/ThripitakaQuest_BackEnd/db/80008223-4225-4e3b-8e8e-14b0390801e8/index_metadata.pickle

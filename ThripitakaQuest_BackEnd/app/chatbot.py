@@ -96,7 +96,7 @@ def ask():
             user_input = data.get('query', '')
             answer = process_answer({'query': user_input})
             response = jsonify({'response': answer})
-            print(user_input)
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000/'  # Replace * with your actual frontend origin
             return jsonify({'response': answer})
         else:
             return jsonify({'response': "enter a question"})

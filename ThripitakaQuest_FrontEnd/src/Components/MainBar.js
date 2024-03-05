@@ -107,7 +107,7 @@ export default function MainBar(props) {
     const userMessage = { text: text, sender: 'user', isBot: false, timestamp: new Date() };
     setMessages([...messages, userMessage]);
     
-    const botResponse = await axios.post('http://127.0.0.1:5000/chatbot/ask', {text})
+    const botResponse = await axios.post('http://127.0.0.1:5000/chatbot/ask', {'query':text})
     // Getting responese for the user message
     // const botResponse = await sendMsgToOpenAI(text);
     const botMessage = { text: botResponse, sender: 'bot', isBot: true, timestamp: new Date() };
