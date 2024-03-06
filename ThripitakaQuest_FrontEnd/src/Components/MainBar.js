@@ -98,6 +98,10 @@ export default function MainBar(props) {
     }
   };
 
+
+////////////////////////////////////////
+
+
   // Send conversation data into database
   const handleSend = async () => {
     const text = input;
@@ -110,11 +114,26 @@ export default function MainBar(props) {
     // Create user message object
     const userMessage = { text: text, sender: 'user', isBot: false, timestamp: new Date() };
     setMessages([...messages, userMessage]);
+    let botMessage; 
     try {
-      const botResponse = await axios.post('http://127.0.0.1:5000/chatbot/ask', { query: text });
-      // Getting responese for the user message
-      // const botResponse = await sendMsgToOpenAI(text);
-      const botMessage = { text: botResponse.data.botResponse || 'Error : No response', sender: 'bot', isBot: true, timestamp: new Date() };
+      const response = await axios.post('http://127.0.0.1:5000/chatbot/ask', { query: text });
+      
+      // Store the response data in a variable
+      const botResponseData = response.data;
+    
+      // Create a bot message using the response data
+        botMessage = {
+        text: botResponseData.response,
+        sender: 'bot',
+        isBot: true,
+        timestamp: new Date()
+      };
+    
+      // Update state with the new bot message
+      setMessages([...messages, botMessage]);
+    } catch (error) {
+      console.log(error);
+    };
 
       //const botMessage = { text: botResponse.data.message, sender: 'bot', isBot: true, timestamp: new Date() };
 
@@ -131,9 +150,7 @@ export default function MainBar(props) {
         setMessages([...messages, userMessage, botMessage]);
         updateFirebaseWithMessages(conversationRef, userMessage, botMessage);
       }
-    } catch (error) {
-      console.error('Error during Axios request:', error);
-    }
+
   };
 
 

@@ -95,6 +95,7 @@ def ask():
         response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
         response.headers['Access-Control-Allow-Methods'] = 'POST'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response
     try:
         data = request.get_json()
         user_input = data.get('query', '')
@@ -102,10 +103,13 @@ def ask():
             return jsonify({'response': "Please provide a question"}),400
         
         answer = process_answer({'query': user_input})
+       
         response = jsonify({'response': answer})
         response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
         print(answer)
         return response
 
     except Exception as e:
-        return jsonify({'error': str(e)})
+        error_response = jsonify({'error': str(e)})
+        error_response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        return error_response
