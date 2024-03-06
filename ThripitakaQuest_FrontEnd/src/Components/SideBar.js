@@ -7,14 +7,14 @@ import addBtnLogo from "../assets/add-30.png";
 import message from "../assets/message.svg";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from "react";
-import {db} from '../Pages/firebase';
+import { db } from '../Pages/firebase';
 import { getAuth, signOut } from 'firebase/auth';
-import { collection, query, where,doc, getDocs, startsWith, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, doc, getDocs, startsWith, deleteDoc } from 'firebase/firestore';
 import ProfileOptionsPopup from '../Components/ProfileOption';
 import { useUserContext } from '../UserContext';
 
 
-export default function(props){
+export default function (props) {
 
   // Use usestate to check whether profile option modal is display or not
   const [showProfileOptions, setShowProfileOptions] = useState(false);
@@ -89,32 +89,32 @@ export default function(props){
   // Function to delete a conversation from the database
   const handleDeleteButtonClick = async (conversationId) => {
     try {
-        // Implement logic to delete the conversation document
-        await deleteConversation(conversationId);
+      // Implement logic to delete the conversation document
+      await deleteConversation(conversationId);
 
-        // Reset the selected conversation ID to null
-        setSelectedConversationId(null);
+      // Reset the selected conversation ID to null
+      setSelectedConversationId(null);
 
-        // Update the conversation list
-        await fetchConversations();
+      // Update the conversation list
+      await fetchConversations();
 
-        // Call the function to reset the current conversation
-        resetCurrentConversation();
+      // Call the function to reset the current conversation
+      resetCurrentConversation();
     } catch (error) {
-        console.error('Error deleting conversation:', error);
+      console.error('Error deleting conversation:', error);
     }
   };
 
   // Function for the delete conversation
   const deleteConversation = async (conversationId) => {
     try {
-        // Implement logic to delete the conversation document
-        const conversationRef = doc(db, 'conversations', conversationId);
-        await deleteDoc(conversationRef);
-        // Reset the selectedConversationId
-        setSelectedConversationId(null);
+      // Implement logic to delete the conversation document
+      const conversationRef = doc(db, 'conversations', conversationId);
+      await deleteDoc(conversationRef);
+      // Reset the selectedConversationId
+      setSelectedConversationId(null);
     } catch (error) {
-        console.error('Error deleting conversation document:', error);
+      console.error('Error deleting conversation document:', error);
     }
   };
 
@@ -132,7 +132,7 @@ export default function(props){
   const handleSettingsClick = () => {
     navigate('/Profile', { state: location.state });
   };
-  
+
   // Function to close the settings modal
   const handleSettingsClose = () => {
     setShowSettingsModal(false);
@@ -152,7 +152,7 @@ export default function(props){
       navigate('/', { replace: true })
 
       // Clear local storage or session storage (optional)
-      localStorage.clear(); 
+      localStorage.clear();
       sessionStorage.clear();
 
       // Reload the page to ensure a clean state after logout
@@ -162,64 +162,67 @@ export default function(props){
     }
   };
 
-    return(
-        <div className="sideBar">
-            <div className="upperSide">
-                <div className="upperSideTop">
-                    <Image src={logo} rounded className="logo"/>
-                    
-                </div>
+  return (
+    <div className="sideBar">
+      <div className="upperSide">
+        <div className="upperSideTop">
+          <Image src={logo} rounded className="logo" />
 
-                <button variant="primary" className="midButton"><Image src={addBtnLogo} rounded className="newChatBtnImg" onClick={handleNewChatClick}/> New Chat</button>{' '}
-
-                <div className="upperSideBottom">
-                {conversations.length > 0 ? (
-                    conversations.map((conversation) => (
-                      <div key={conversation.id} className="queryButtonContainer">
-                        <Button
-                          variant="primary"
-                          className="queryButton"
-                          onClick={() => handleQueryButtonClick(conversation.id)}
-                          onMouseEnter={() => setSelectedConversationId(conversation.id)}
-                          onMouseLeave={() => setSelectedConversationId(null)}
-                        >
-                          <Image src={message} rounded className="queryBtnImg" />
-                          {conversation.messages[0].text} {/* Assumes the first message is in messages[0] */}
-
-                          {/* Delete icon button */}
-                          {selectedConversationId === conversation.id && (
-                            <Image
-                              src={deleteIcon}
-                              rounded
-                              className="deleteBtnImg"
-                              onClick={() => {handleDeleteButtonClick(conversation.id); 
-                                              setSelectedConversationId(conversation.id);}}
-                            />
-                          )}
-                        </Button>
-                      </div>
-                    ))
-                    ) : (
-                     <></>
-                    )} 
-                </div>             
-            </div>
-            <div className="lowerSide">
-                <div className="listItems"> 
-                <button className="profileBtn" onClick={handleProfileOptionsClick}>
-                  <Image src={ imageUrl ? imageUrl : userIcon} roundedCircle className="listItemsImg"/> {displayName || `${firstName} ${lastName}`}
-                </button>
-                 </div>
-            </div>
-                {/* Profile Options Popup */}
-                <ProfileOptionsPopup
-                  show={showProfileOptions}
-                  onHide={handleProfileOptionsClose}
-                  onSettingsClick={handleSettingsClick}
-                  onLogoutClick={handleLogoutClick}
-                />  
         </div>
-    );
+
+        <button variant="primary" className="midButton"><Image src={addBtnLogo} rounded className="newChatBtnImg" onClick={handleNewChatClick} /> New Chat</button>{' '}
+
+        <div className="upperSideBottom">
+          {conversations.length > 0 ? (
+            conversations.map((conversation) => (
+              <div key={conversation.id} className="queryButtonContainer">
+                <Button
+                  variant="primary"
+                  className="queryButton"
+                  onClick={() => handleQueryButtonClick(conversation.id)}
+                  onMouseEnter={() => setSelectedConversationId(conversation.id)}
+                  onMouseLeave={() => setSelectedConversationId(null)}
+                >
+                  <Image src={message} rounded className="queryBtnImg" />
+                  {conversation.messages && conversation.messages.length > 0 && conversation.messages[0].text && (
+                    <span>{conversation.messages[0].text}</span>
+                  )}
+                  {/* Delete icon button */}
+                  {selectedConversationId === conversation.id && (
+                    <Image
+                      src={deleteIcon}
+                      rounded
+                      className="deleteBtnImg"
+                      onClick={() => {
+                        handleDeleteButtonClick(conversation.id);
+                        setSelectedConversationId(conversation.id);
+                      }}
+                    />
+                  )}
+                </Button>
+              </div>
+            ))
+          ) : (
+            <></>
+          )}
+        </div>
+      </div>
+      <div className="lowerSide">
+        <div className="listItems">
+          <button className="profileBtn" onClick={handleProfileOptionsClick}>
+            <Image src={imageUrl ? imageUrl : userIcon} roundedCircle className="listItemsImg" /> {displayName || `${firstName} ${lastName}`}
+          </button>
+        </div>
+      </div>
+      {/* Profile Options Popup */}
+      <ProfileOptionsPopup
+        show={showProfileOptions}
+        onHide={handleProfileOptionsClose}
+        onSettingsClick={handleSettingsClick}
+        onLogoutClick={handleLogoutClick}
+      />
+    </div>
+  );
 }
 
 

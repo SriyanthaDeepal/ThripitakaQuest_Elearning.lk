@@ -88,17 +88,24 @@ from flask_cors import CORS
 chat_bot = Blueprint('chat_bot', __name__)
 CORS(chat_bot)
 
-@chat_bot.route('/ask', methods=["POST", "GET"])
+@chat_bot.route('/ask', methods=["POST"])
 def ask():
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'success'})
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Methods'] = 'POST'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     try:
-        if request.method == "POST":
-            data = request.get_json()
-            user_input = data.get('query', '')
-            answer = process_answer({'query': user_input})
-            response = jsonify({'response': answer})
-            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000/'  # Replace * with your actual frontend origin
-            return jsonify({'response': answer})
-        else:
-            return jsonify({'response': "enter a question"})
+        data = request.get_json()
+        user_input = data.get('query', '')
+        if not user_input:
+            return jsonify({'response': "Please provide a question"}),400
+        
+        answer = process_answer({'query': user_input})
+        response = jsonify({'response': answer})
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        print(answer)
+        return response
+
     except Exception as e:
         return jsonify({'error': str(e)})

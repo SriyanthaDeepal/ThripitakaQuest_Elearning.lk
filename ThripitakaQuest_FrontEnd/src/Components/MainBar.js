@@ -53,7 +53,7 @@ export default function MainBar(props) {
       setMessages([]);
       setConversationID(generateConversationID());
       // Reset isNewConversation to false after successfully creating a new conversation
-       props.resetNewConversation();
+      props.resetNewConversation();
     }
   }, [props.isNewConversation]);
 
@@ -101,36 +101,43 @@ export default function MainBar(props) {
   // Send conversation data into database
   const handleSend = async () => {
     const text = input;
+    if (text === undefined || text.trim() === '') {
+      console.error('Error: Text is undefined of empty');
+      return;
+    }
     setInput('');
-    
+
     // Create user message object
     const userMessage = { text: text, sender: 'user', isBot: false, timestamp: new Date() };
     setMessages([...messages, userMessage]);
-    
-    const botResponse = await axios.post('http://127.0.0.1:5000/chatbot/ask', {'query':text})
-    // Getting responese for the user message
-    // const botResponse = await sendMsgToOpenAI(text);
-    const botMessage = { text: botResponse, sender: 'bot', isBot: true, timestamp: new Date() };
+    try {
+      const botResponse = await axios.post('http://127.0.0.1:5000/chatbot/ask', { query: text });
+      // Getting responese for the user message
+      // const botResponse = await sendMsgToOpenAI(text);
+      const botMessage = { text: botResponse.data.botResponse || 'Error : No response', sender: 'bot', isBot: true, timestamp: new Date() };
 
-    //const botMessage = { text: botResponse.data.message, sender: 'bot', isBot: true, timestamp: new Date() };
-    
-    // update the conversation in firestore based on the conversation status
-    if (loadingOldConversation) {
-      // If loading an old conversation, update the existing conversation
-      const conversationRef = doc(collection(db, 'conversations'), props.selectedConversation);
-      setMessages([...messages, userMessage, botMessage]);
-      updateFirebaseWithMessages(conversationRef, userMessage, botMessage);
-    } else {
-      // If starting a new conversation, create a new conversation
-      const conversationRef = doc(collection(db, 'conversations'), conversationID);
-      await createConversationIfNotExists(conversationRef);
-      setMessages([...messages, userMessage, botMessage]);
-      updateFirebaseWithMessages(conversationRef, userMessage, botMessage);
+      //const botMessage = { text: botResponse.data.message, sender: 'bot', isBot: true, timestamp: new Date() };
+
+      // update the conversation in firestore based on the conversation status
+      if (loadingOldConversation) {
+        // If loading an old conversation, update the existing conversation
+        const conversationRef = doc(collection(db, 'conversations'), props.selectedConversation);
+        setMessages([...messages, userMessage, botMessage]);
+        updateFirebaseWithMessages(conversationRef, userMessage, botMessage);
+      } else {
+        // If starting a new conversation, create a new conversation
+        const conversationRef = doc(collection(db, 'conversations'), conversationID);
+        await createConversationIfNotExists(conversationRef);
+        setMessages([...messages, userMessage, botMessage]);
+        updateFirebaseWithMessages(conversationRef, userMessage, botMessage);
+      }
+    } catch (error) {
+      console.error('Error during Axios request:', error);
     }
   };
-  
 
-  
+
+
   // Function for update the firebase with messages
   const updateFirebaseWithMessages = async (conversationRef, userMessage, botMessage) => {
     try {
@@ -143,25 +150,25 @@ export default function MainBar(props) {
   };
 
   // Function for genereate unique conversation document identifier
-    function generateConversationID() {
-        const uniqueIdentifier = generateUniqueIdentifier(); 
-        return `${userID}_${uniqueIdentifier}`;
-    }
+  function generateConversationID() {
+    const uniqueIdentifier = generateUniqueIdentifier();
+    return `${userID}_${uniqueIdentifier}`;
+  }
 
   // Function for generate a random 6-character alphanumeric string:
   function generateUniqueIdentifier() {
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let uniqueIdentifier = '';
-      for (let i = 0; i < 6; i++) {
-          const randomIndex = Math.floor(Math.random() * characters.length);
-          uniqueIdentifier += characters.charAt(randomIndex);
-      }
-      return uniqueIdentifier;
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let uniqueIdentifier = '';
+    for (let i = 0; i < 6; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      uniqueIdentifier += characters.charAt(randomIndex);
+    }
+    return uniqueIdentifier;
   }
-  
+
   // Function for handle enter key option in user inputbar
   const handleEnter = async (e) => {
-    if(e.key=='Enter') await handleSend();
+    if (e.key == 'Enter') await handleSend();
   }
 
 
