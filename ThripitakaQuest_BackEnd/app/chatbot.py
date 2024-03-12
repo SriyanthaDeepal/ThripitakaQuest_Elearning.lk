@@ -10,6 +10,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.llms import HuggingFacePipeline
 from langchain.chains import RetrievalQA
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 print(f"Using device: {device}")
 
 
@@ -26,9 +27,9 @@ tokenizer.pad_token_id = tokenizer.eos_token_id
 
 persist_directory = "db"
 
-loader = TextLoader('ThripitakaQuest_BackEnd\\app\statics\\tipitaka.txt', encoding="utf-8")
+loader = TextLoader('ThripitakaQuest_BackEnd\\app\statics\\Tripitaka.txt', encoding="utf-8")
 documents = loader.load()
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=100)
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=200)
 texts = text_splitter.split_documents(documents)
 # create embeddings here
 embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
@@ -43,11 +44,11 @@ def llm_pipeline():
         'text-generation',
         model=base_model,
         tokenizer=tokenizer,
-        max_length=500,
+        max_length=300,
         do_sample=True,
         temperature=0.3,
         top_p=0.90,
-        num_workers=2,
+        num_workers=2
     )
     local_llm = HuggingFacePipeline(pipeline=pipe)
     return local_llm

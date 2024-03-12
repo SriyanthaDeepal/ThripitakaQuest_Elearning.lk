@@ -195,7 +195,7 @@ export default function MainBar(props) {
     setNewConversation(true);
   };
 
-  return (
+  return ( 
     <div className="mainBar">
       <div className="chatWindow">
         {messages.map((message, i) =>
